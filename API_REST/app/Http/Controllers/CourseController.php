@@ -2,47 +2,65 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // GET /api/courses
     public function index()
     {
-        //
+        $courses = Course::all();
+
+        return response()->json($courses, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // POST /api/courses
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'academy_id' => 'required|exists:academies,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'capacity' => 'nullable|integer|min:1',
+        ]);
+
+        $course = Course::create($validated);
+
+        return response()->json($course, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // GET /api/courses/{course}
+    public function show(Course $course)
     {
-        //
+        return response()->json($course, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // PUT/PATCH /api/courses/{course}
+    public function update(Request $request, Course $course)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'capacity' => 'nullable|integer|min:1',
+        ]);
+
+        $course->update($validated);
+
+        return response()->json($course, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    // DELETE /api/courses/{course}
+    public function destroy(Course $course)
     {
-        //
+        $course->delete();
+
+        return response()->json([
+            'message' => 'Curso eliminado correctamente'
+        ], 200);
     }
 }
