@@ -2,66 +2,75 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Academy;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
-class AcademyController extends Controller
+class AuthController extends Controller
 {
-    // GET /api/academies
-    public function index(Request $request)
+    public function register(Request $request)
     {
-        $academies = Academy::where('user_id', $request->user()->id)->get();
-
-        return response()->json($academies, 200);
-    }
-
-    // POST /api/academies
-    public function store(Request $request)
-    {
+        // 1. Validamos los datos recibidos
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $validated['user_id'] = $request->user()->id;
-
-        $academy = Academy::create($validated);
-
-        return response()->json($academy, 201);
-    }
-
-    // GET /api/academies/{academy}
-    public function show(Academy $academy)
-    {
-        return response()->json($academy, 200);
-    }
-
-    // PUT/PATCH /api/academies/{academy}
-    public function update(Request $request, Academy $academy)
-    {
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
+        // 2. Creamos el usuario
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
-        $academy->update($validated);
+        // 3. Generamos un token de Sanctum
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json($academy, 200);
-    }
-
-    // DELETE /api/academies/{academy}
-    public function destroy(Academy $academy)
-    {
-        $academy->delete();
-
+        // 4. Devolvemos la respuesta
         return response()->json([
-            'message' => 'Academia eliminada correctamente'
+            'message' => 'Usuario registrado correctamente',
+            'user' => $user,
+            'token' => $token,
+        ], 201);
+    }
+    public function login(Request $request)
+    {
+        // 1. Validamos los datos recibidos
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        // 2. Comprobamos las credenciales
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'Credenciales incorrectas'
+            ], 401);
+        }
+
+        // 3. Obtenemos el usuario autenticado
+        $user = Auth::user();
+
+        // 4. Generamos un token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        // 5. Devolvemos la respuesta
+        return response()->json([
+            'message' => 'Inicio de sesión correcto',
+            'user' => $user,
+            'token' => $token,
+        ], 200);
+    }
+    public function logout(Request $request)
+    {
+        // 1. Obtenemos el token actual del usuario
+        $request->user()->currentAccessToken()->delete();
+
+        // 2. Devolvemos una respuesta
+        return response()->json([
+            'message' => 'Sesión cerrada correctamente'
         ], 200);
     }
 }
