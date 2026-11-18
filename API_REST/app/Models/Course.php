@@ -19,4 +19,10 @@ class Course extends Model
     {
         return $this->belongsTo(Academy::class);
     }
+
+    public function students()
+    {
+        return $this->belongsToMany(Student::class)
+                    ->withPivot('enrolled_at');
+    }
 }
