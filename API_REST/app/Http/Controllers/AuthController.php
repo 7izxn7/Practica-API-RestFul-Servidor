@@ -26,6 +26,8 @@ class AcademyController extends Controller
             'email' => 'nullable|email|max:255',
         ]);
 
+        $validated['user_id'] = $request->user()->id;
+
         $academy = Academy::create($validated);
 
         return response()->json($academy, 201);
