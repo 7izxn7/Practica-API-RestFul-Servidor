@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use App\Models\Student;
 
 class CourseController extends Controller
 {
@@ -61,6 +62,49 @@ class CourseController extends Controller
 
         return response()->json([
             'message' => 'Curso eliminado correctamente'
+        ], 200);
+    }
+
+    public function students(Course $course)
+    {
+        $students = $course->students;
+
+        return response()->json($students, 200);
+    }
+
+    public function enroll(Course $course, Student $student, Request $request)
+    {
+        // Comprobar que el usuario es propietario de la academia
+        if ($course->academy->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'No tienes permiso para matricular estudiantes en este curso'
+            ], 403);
+        }
+
+        // Matricular al estudiante
+        $course->students()->attach($student->id, [
+            'enrolled_at' => now()
+        ]);
+
+        return response()->json([
+            'message' => 'Estudiante matriculado correctamente'
+        ], 200);
+    }
+
+    public function unenroll(Course $course, Student $student, Request $request)
+    {
+        // Comprobar que el usuario es propietario de la academia
+        if ($course->academy->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'No tienes permiso para desmatricular estudiantes de este curso'
+            ], 403);
+        }
+
+        // Eliminar la matrícula
+        $course->students()->detach($student->id);
+
+        return response()->json([
+            'message' => 'Estudiante desmatriculado correctamente'
         ], 200);
     }
 }

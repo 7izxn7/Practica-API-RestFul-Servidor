@@ -62,4 +62,11 @@ class AcademyController extends Controller
             'message' => 'Academia eliminada correctamente'
         ], 200);
     }
+
+    public function courses(Academy $academy)
+    {
+        $courses = $academy->courses;
+
+        return response()->json($courses, 200);
+    }
 }
