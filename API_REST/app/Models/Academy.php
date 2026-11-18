@@ -15,5 +15,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 ])]
 class Academy extends Model
 {
-    //
+    public function courses()
+    {
+        return $this->hasMany(Course::class);
+    }
 }
