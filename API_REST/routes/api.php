@@ -25,6 +25,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD de academias
     Route::apiResource('academies', AcademyController::class);
 
+    // CRUD de cursos
+    Route::apiResource("courses", CourseController::class);
+
     // Consultar estudiantes de un curso
     Route::get('/course/{course}/students', [CourseController::class, 'students']);
 
