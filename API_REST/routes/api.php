@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StudentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AcademyController;
@@ -27,6 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // CRUD de cursos
     Route::apiResource("courses", CourseController::class);
+
+    // CRUD de estudiantes
+    Route::apiResource("students", StudentController::class);
 
     // Consultar estudiantes de un curso
     Route::get('/course/{course}/students', [CourseController::class, 'students']);
